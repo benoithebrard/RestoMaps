@@ -11,7 +11,11 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.bempaaa.restomaps.BuildConfig.APPLICATION_ID
+import com.bempaaa.restomaps.data.RestoLocation
+import com.bempaaa.restomaps.viewmodels.RestoMapViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -30,14 +34,13 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private val REQUEST_PERMISSIONS_REQUEST_CODE = 34
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var viewModel: RestoMapViewModel
 
     var map: GoogleMap? = null
         set(value) {
             if (field != value) {
                 currentLocation?.let { location ->
-                    value?.let { map ->
-                        showMapLocation(location, map)
-                    }
+                    value?.startAtLocation(location)
                 }
                 field = value
             }
@@ -47,9 +50,7 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
         set(value) {
             if (field != value) {
                 value?.let { location ->
-                    map?.let { map ->
-                        showMapLocation(location, map)
-                    }
+                    map?.startAtLocation(location)
                 }
                 field = value
             }
@@ -60,6 +61,7 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
         setContentView(R.layout.activity_maps)
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        viewModel = ViewModelProviders.of(this).get(RestoMapViewModel::class.java)
 
         val mapFragment = supportFragmentManager
             .findFragmentById(R.id.map) as SupportMapFragment
@@ -70,10 +72,10 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
         map = googleMap
     }
 
-    private fun showMapLocation(location: LatLng, map: GoogleMap) {
-        with(map) {
+    private fun GoogleMap.startAtLocation(location: LatLng) {
+        with(this) {
             moveCamera(CameraUpdateFactory.newLatLngZoom(location, ORIGINAL_ZOOM_LEVEL))
-            addMarker(MarkerOptions().position(location).title("marker 1"))
+            addMarker(MarkerOptions().position(location).title("initial location"))
 
             setOnMarkerClickListener { marker ->
                 marker.showInfoWindow()
@@ -84,29 +86,21 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.makeText(this@RestoMapsActivity, marker.title, Toast.LENGTH_LONG).show()
             }
 
+            viewModel.restoMarkers.observe(this@RestoMapsActivity, Observer<List<MarkerOptions>> { restoMarkers ->
+                restoMarkers.addToMap(this)
+            })
+
             setOnCameraIdleListener {
-                val bounds = projection.visibleRegion.latLngBounds
-                addMarker(MarkerOptions().position(bounds.northeast).title("marker 4"))
-                addMarker(MarkerOptions().position(bounds.southwest).title("marker 5"))
-                addMarker(
-                    MarkerOptions().position(
-                        LatLng(
-                            bounds.northeast.latitude,
-                            bounds.southwest.longitude
-                        )
-                    ).title("marker 6")
-                )
-                addMarker(
-                    MarkerOptions().position(
-                        LatLng(
-                            bounds.southwest.latitude,
-                            bounds.northeast.longitude
-                        )
-                    ).title("marker 7")
-                )
+                val cameraBounds = projection.visibleRegion.latLngBounds
+                viewModel.fetchRestoMarkers(cameraBounds.northeast, cameraBounds.southwest)
             }
         }
     }
+
+    private fun List<MarkerOptions>.addToMap(map: GoogleMap) =
+        with(map) {
+            forEach { addMarker(it) }
+        }
 
     override fun onStart() {
         super.onStart()
