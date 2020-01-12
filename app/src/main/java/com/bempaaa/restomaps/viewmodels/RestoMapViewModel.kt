@@ -1,27 +1,37 @@
 package com.bempaaa.restomaps.viewmodels
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
-import androidx.lifecycle.ViewModel
-import com.bempaaa.restomaps.data.RestoLocation
-import com.bempaaa.restomaps.data.toMarkers
-import com.google.android.gms.maps.model.LatLng
+import androidx.lifecycle.*
+import com.bempaaa.restomaps.data.*
+import com.bempaaa.restomaps.data.Configuration.restoService
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.android.gms.maps.model.MarkerOptions
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.io.IOException
 
 class RestoMapViewModel : ViewModel() {
-    private val restoLocations: MutableLiveData<List<RestoLocation>> by lazy {
-        MutableLiveData<List<RestoLocation>>()
+    private val repository = RestoMapsRepository(restoService)
+
+    private val restoVenues: MutableLiveData<List<RestoVenue>> by lazy {
+        MutableLiveData<List<RestoVenue>>()
     }
 
-    val restoMarkers: LiveData<List<MarkerOptions>> = Transformations.map(restoLocations) {
-            restoLocations -> restoLocations.toMarkers()
-    }
+    val restoMarkers: LiveData<List<MarkerOptions>> =
+        Transformations.map(restoVenues) { restoVenues ->
+            restoVenues.toMarkers()
+        }
 
-    fun fetchRestoMarkers(northeast: LatLng, southwest: LatLng) {
-        restoLocations.value = listOf(
-            RestoLocation(northeast, "northeast"),
-            RestoLocation(southwest, "southwest")
-        )
+    fun fetchRestoMarkers(cameraBounds: LatLngBounds) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val venues = repository.searchForVenues(
+                    sw = cameraBounds.southwest,
+                    ne = cameraBounds.northeast
+                ).response.venues
+                restoVenues.postValue(venues)
+            } catch (e: IOException) {
+                val tot = 0
+            }
+        }
     }
 }

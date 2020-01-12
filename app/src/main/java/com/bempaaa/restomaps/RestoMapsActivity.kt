@@ -86,13 +86,15 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.makeText(this@RestoMapsActivity, marker.title, Toast.LENGTH_LONG).show()
             }
 
-            viewModel.restoMarkers.observe(this@RestoMapsActivity, Observer<List<MarkerOptions>> { restoMarkers ->
-                restoMarkers.addToMap(this)
-            })
+            viewModel.restoMarkers.observe(
+                this@RestoMapsActivity,
+                Observer<List<MarkerOptions>> { restoMarkers ->
+                    restoMarkers.addToMap(this)
+                })
 
             setOnCameraIdleListener {
                 val cameraBounds = projection.visibleRegion.latLngBounds
-                viewModel.fetchRestoMarkers(cameraBounds.northeast, cameraBounds.southwest)
+                viewModel.fetchRestoMarkers(cameraBounds)
             }
         }
     }
@@ -115,7 +117,7 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
     @SuppressLint("MissingPermission")
     private fun getLastLocation() {
         fusedLocationClient.lastLocation.addOnCompleteListener { taskLocation ->
-            if (taskLocation.isSuccessful) {
+            if (taskLocation.isSuccessful && taskLocation.result != null) {
                 currentLocation = taskLocation.result?.let { location ->
                     LatLng(location.latitude, location.longitude)
                 }
@@ -156,19 +158,11 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Manifest.permission.ACCESS_COARSE_LOCATION
             )
         ) {
-            // Provide an additional rationale to the user. This would happen if the user denied the
-            // request previously, but didn't check the "Don't ask again" checkbox.
             showSnackbar(R.string.permission_rationale, android.R.string.ok, View.OnClickListener {
-                // Request permission
                 startLocationPermissionRequest()
             })
 
-        } else {
-            // Request permission. It's possible this can be auto answered if device policy
-            // sets the permission in a given state or the user denied the permission
-            // previously and checked "Never ask again".
-            startLocationPermissionRequest()
-        }
+        } else startLocationPermissionRequest()
     }
 
     override fun onRequestPermissionsResult(
@@ -182,7 +176,6 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 else -> {
                     showSnackbar(R.string.permission_denied_explanation, R.string.settings,
                         View.OnClickListener {
-                            // Build intent that displays the App settings screen.
                             val intent = createSettingsIntent()
                             startActivity(intent)
                         })
