@@ -23,11 +23,14 @@ class RestoMapViewModel : ViewModel() {
 
     fun fetchRestoMarkers(cameraBounds: LatLngBounds) {
         viewModelScope.launch(Dispatchers.IO) {
+            val sw = cameraBounds.southwest
+            val ne = cameraBounds.northeast
+
+            val cachedVenues = repository.getCachedVenues(sw, ne)
+            restoVenues.postValue(cachedVenues)
+
             try {
-                val venues = repository.searchForVenues(
-                    sw = cameraBounds.southwest,
-                    ne = cameraBounds.northeast
-                ).response.venues
+                val venues = repository.searchForVenues(sw, ne)
                 restoVenues.postValue(venues)
             } catch (e: IOException) {
                 val tot = 0
