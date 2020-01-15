@@ -50,7 +50,7 @@ class RestoMapViewModel : ViewModel() {
         }
     }
 
-    fun getCachedVenue(name: String) = repository.getCachedVenueByName(name)
+    fun getCachedVenueByName(name: String) = repository.getCachedVenueByName(name)
 
     sealed class FetchResult {
         object Loading : FetchResult()

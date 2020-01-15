@@ -89,7 +89,7 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             setOnInfoWindowClickListener { marker ->
-                restoMapViewModel.getCachedVenue(marker.title)?.let { venue ->
+                restoMapViewModel.getCachedVenueByName(marker.title)?.let { venue ->
                     val restoDetailsFragment = RestoDetailsFragment.newInstance(venue)
                     restoDetailsFragment.show(supportFragmentManager, restoDetailsFragment.tag)
                 }

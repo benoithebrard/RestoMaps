@@ -12,23 +12,110 @@
         <import type="android.view.View" />
     </data>
 
-    <FrameLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryDark">
+        android:background="@color/colorPrimary"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:padding="20dp">
 
         <TextView
             android:layout_width="wrap_content"
-            android:layout_height="500dp"
-            android:layout_gravity="center"
-            android:gravity="center"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:text="@{viewModel.title}"
+            android:textColor="#ffffff"
+            android:textSize="20sp"
+            tools:text="loading" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="15dp"
+            android:text="@{viewModel.category}"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            tools:text="loading" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="10dp"
+            android:text="@{viewModel.phone}"
+            android:textAllCaps="true"
+            android:textColor="#ffffff"
+            android:textSize="16sp"
+            android:visibility="@{viewModel.phone == null ? View.GONE : View.VISIBLE}"
+            tools:text="loading" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:fontFamily="sans-serif"
             android:paddingStart="8dp"
             android:paddingTop="3dp"
             android:paddingEnd="8dp"
             android:paddingBottom="5dp"
-            android:text="@{viewModel.title}"
+            android:text="@{viewModel.address}"
             android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:visibility="@{viewModel.address == null ? View.GONE : View.VISIBLE}"
             tools:text="loading" />
-    </FrameLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="5dp"
+            android:text="@{viewModel.postalCode}"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:visibility="@{viewModel.postalCode == null ? View.GONE : View.VISIBLE}"
+            tools:text="loading" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="10dp"
+            android:text="@{viewModel.city}"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:visibility="@{viewModel.city == null ? View.GONE : View.VISIBLE}"
+            tools:text="loading" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:paddingStart="8dp"
+            android:paddingTop="3dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="10dp"
+            android:text="@{viewModel.websiteUrl}"
+            android:textColor="#ffffff"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            android:visibility="@{viewModel.websiteUrl == null ? View.GONE : View.VISIBLE}"
+            tools:text="loading" />
+    </LinearLayout>
 </layout>
