@@ -12,29 +12,47 @@ import kotlinx.io.IOException
 class RestoMapViewModel : ViewModel() {
     private val repository = RestoMapsRepository(restoService)
 
-    private val restoVenues: MutableLiveData<List<RestoVenue>> by lazy {
-        MutableLiveData<List<RestoVenue>>()
+    private val fetchResult: MutableLiveData<FetchResult> by lazy {
+        MutableLiveData<FetchResult>(FetchResult.Loading)
     }
 
-    val restoMarkers: LiveData<List<MarkerOptions>> =
-        Transformations.map(restoVenues) { restoVenues ->
-            restoVenues.toMarkers()
-        }
-
-    fun fetchRestoMarkers(cameraBounds: LatLngBounds) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val sw = cameraBounds.southwest
-            val ne = cameraBounds.northeast
-
-            val cachedVenues = repository.getCachedVenues(sw, ne)
-            restoVenues.postValue(cachedVenues)
-
-            try {
-                val venues = repository.searchForVenues(sw, ne)
-                restoVenues.postValue(venues)
-            } catch (e: IOException) {
-                val tot = 0
+    val infoText: LiveData<String?> =
+        Transformations.map(fetchResult) { result ->
+            when (result) {
+                is FetchResult.Loading -> "loading.."
+                is FetchResult.Error -> "error fetching data"
+                else -> null
             }
         }
+
+    val restoMarkers: LiveData<List<MarkerOptions>> =
+        Transformations.map(fetchResult) { result ->
+            when (result) {
+                is FetchResult.Success -> result.restoVenues.toMarkers()
+                else -> emptyList()
+            }
+        }
+
+    fun fetchRestoMarkers(bounds: LatLngBounds) {
+        viewModelScope.launch(Dispatchers.IO) {
+            // TODO: move this logic to the repository instead
+            fetchResult.postValue(FetchResult.Loading)
+
+            val cachedVenues = repository.getCachedVenues(bounds)
+            fetchResult.postValue(FetchResult.Success(cachedVenues))
+
+            try {
+                val venues = repository.searchForVenues(bounds)
+                fetchResult.postValue(FetchResult.Success(venues))
+            } catch (e: IOException) {
+                fetchResult.postValue(FetchResult.Error)
+            }
+        }
+    }
+
+    sealed class FetchResult {
+        object Loading : FetchResult()
+        data class Success(val restoVenues: List<RestoVenue>) : FetchResult()
+        object Error : FetchResult()
     }
 }

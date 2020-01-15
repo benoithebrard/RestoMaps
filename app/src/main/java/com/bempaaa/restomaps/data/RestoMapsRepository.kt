@@ -1,32 +1,54 @@
 package com.bempaaa.restomaps.data
 
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 
-//sw=55.55,12.97&ne=55.61,13.04
+private const val MIN_CACHE_SIZE_CLEAN = 100
 
 class RestoMapsRepository(private val service: FourSquareSearchService) {
 
     private val venueCache = HashMap<RestoLocation, RestoVenue>()
 
-    suspend fun searchForVenues(sw: LatLng, ne: LatLng): List<RestoVenue> {
+    suspend fun searchForVenues(bounds: LatLngBounds): List<RestoVenue> {
+        if (venueCache.size > MIN_CACHE_SIZE_CLEAN) {
+            cleanCache(bounds)
+        }
+
         val venues = service.searchForVenues(
-            swLatLng = sw.preFormat(),
-            neLatLng = ne.preFormat()
+            swLatLng = bounds.southwest.preFormat(),
+            neLatLng = bounds.northeast.preFormat()
         ).response.venues
 
-        venueCache.putAll(venues.associateBy({ it.location }, { it }))
+        storeInCache(venues)
         return venues
     }
 
-    fun getCachedVenues(sw: LatLng, ne: LatLng): List<RestoVenue> = venueCache.mapNotNull {
-        val location = it.key
-        if (location.lat >= sw.latitude &&
-            location.lat <= ne.latitude &&
-            location.lng >= sw.longitude &&
-            location.lng <= ne.longitude
-        ) it.value else null
+    private fun storeInCache(venues: List<RestoVenue>) {
+        venueCache.putAll(venues.associateBy({ it.location }, { it }))
     }
+
+    fun getCachedVenues(bounds: LatLngBounds): List<RestoVenue> =
+        venueCache.filterKeys { it.isInBounds(bounds) }.values.toList()
+
+    private fun cleanCache(
+        bounds: LatLngBounds
+    ) = venueCache.filterKeys { !it.isInBounds(bounds) }.keys
+        .take(venueCache.size - MIN_CACHE_SIZE_CLEAN)
+        .forEach { venueCache.remove(it) }
 }
 
+//sw=55.55,12.97&ne=55.61,13.04
 private fun LatLng.preFormat(): String =
     "$latitude,$longitude"
+
+private fun RestoLocation.isInBounds(
+    bounds: LatLngBounds
+) = isInBounds(bounds.southwest, bounds.northeast)
+
+private fun RestoLocation.isInBounds(
+    sw: LatLng,
+    ne: LatLng
+) = lat >= sw.latitude &&
+        lat <= ne.latitude &&
+        lng >= sw.longitude &&
+        lng <= ne.longitude
