@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
@@ -27,7 +26,6 @@ private const val ORIGINAL_ZOOM_LEVEL = 13f
 class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val permissionManager = LocationPermissionManager(this)
-
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var restoMapViewModel: RestoMapViewModel
 
@@ -91,8 +89,10 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             setOnInfoWindowClickListener { marker ->
-                // TODO: show detail fragment
-                Toast.makeText(this@RestoMapsActivity, marker.title, Toast.LENGTH_LONG).show()
+                restoMapViewModel.getCachedVenue(marker.title)?.let { venue ->
+                    val restoDetailsFragment = RestoDetailsFragment.newInstance(venue)
+                    restoDetailsFragment.show(supportFragmentManager, restoDetailsFragment.tag)
+                }
             }
 
             restoMapViewModel.restoMarkers.observe(

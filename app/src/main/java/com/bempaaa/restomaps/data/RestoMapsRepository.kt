@@ -23,18 +23,20 @@ class RestoMapsRepository(private val service: FourSquareSearchService) {
         return venues
     }
 
+    fun getCachedVenues(bounds: LatLngBounds): List<RestoVenue> =
+        venueCache.filterKeys { it.isInBounds(bounds) }.values.toList()
+
     private fun storeInCache(venues: List<RestoVenue>) {
         venueCache.putAll(venues.associateBy({ it.location }, { it }))
     }
-
-    fun getCachedVenues(bounds: LatLngBounds): List<RestoVenue> =
-        venueCache.filterKeys { it.isInBounds(bounds) }.values.toList()
 
     private fun cleanCache(
         bounds: LatLngBounds
     ) = venueCache.filterKeys { !it.isInBounds(bounds) }.keys
         .take(venueCache.size - MIN_CACHE_SIZE_CLEAN)
         .forEach { venueCache.remove(it) }
+
+    fun getCachedVenueByName(name: String) = venueCache.values.find { it.name == name }
 }
 
 //sw=55.55,12.97&ne=55.61,13.04

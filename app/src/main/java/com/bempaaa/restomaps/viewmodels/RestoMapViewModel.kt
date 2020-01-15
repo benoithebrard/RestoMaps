@@ -50,6 +50,8 @@ class RestoMapViewModel : ViewModel() {
         }
     }
 
+    fun getCachedVenue(name: String) = repository.getCachedVenueByName(name)
+
     sealed class FetchResult {
         object Loading : FetchResult()
         data class Success(val restoVenues: List<RestoVenue>) : FetchResult()

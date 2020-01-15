@@ -1,5 +1,6 @@
 package com.bempaaa.restomaps.data
 
+import android.os.Parcelable
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.serialization.SerialName
