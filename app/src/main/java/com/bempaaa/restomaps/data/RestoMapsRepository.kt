@@ -1,10 +1,12 @@
 package com.bempaaa.restomaps.data
 
+import android.util.Log
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import kotlinx.io.IOException
 
 private const val MIN_CACHE_SIZE_CLEAN = 100
+private const val EXTRA_CACHE_SIZE_CLEAN = MIN_CACHE_SIZE_CLEAN / 3
 
 class RestoMapsRepository(private val service: FourSquareSearchService) {
 
@@ -31,7 +33,9 @@ class RestoMapsRepository(private val service: FourSquareSearchService) {
 
     private suspend fun searchVenuesInBounds(bounds: LatLngBounds): List<RestoVenue> {
         if (venueCache.size > MIN_CACHE_SIZE_CLEAN) {
-            cleanCache(bounds)
+            val nbRemoved = venueCache.size - MIN_CACHE_SIZE_CLEAN + EXTRA_CACHE_SIZE_CLEAN
+            Log.d("RestoMapsRepository", "== clear cache ($nbRemoved/${venueCache.size}) ==")
+            cleanCache(bounds, nbRemoved)
         }
 
         val venues = service.searchForVenues(
@@ -51,9 +55,10 @@ class RestoMapsRepository(private val service: FourSquareSearchService) {
     }
 
     private fun cleanCache(
-        bounds: LatLngBounds
+        bounds: LatLngBounds,
+        nbRemoved: Int
     ) = venueCache.filterKeys { !it.isInBounds(bounds) }.keys
-        .take(venueCache.size - MIN_CACHE_SIZE_CLEAN)
+        .take(nbRemoved)
         .forEach { venueCache.remove(it) }
 }
 
