@@ -39,7 +39,9 @@ class RestoMapViewModel : ViewModel() {
             fetchResult.postValue(FetchResult.Loading)
 
             val cachedVenues = repository.getCachedVenues(bounds)
-            fetchResult.postValue(FetchResult.Success(cachedVenues))
+            if (cachedVenues.isNotEmpty()) {
+                fetchResult.postValue(FetchResult.Success(cachedVenues))
+            }
 
             try {
                 val venues = repository.searchForVenues(bounds)
