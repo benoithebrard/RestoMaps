@@ -89,6 +89,7 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             setOnInfoWindowClickListener { marker ->
+                // TODO: extend marker class to contain RestoVenue, then search by ID instead
                 restoMapViewModel.getCachedVenueByName(marker.title)?.let { venue ->
                     val restoDetailsFragment = RestoDetailsFragment.newInstance(venue)
                     restoDetailsFragment.show(supportFragmentManager, restoDetailsFragment.tag)
