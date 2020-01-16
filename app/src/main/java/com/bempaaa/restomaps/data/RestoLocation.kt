@@ -17,6 +17,7 @@ data class SearchResponseItem(
 
 @Serializable
 data class RestoVenue(
+    @SerialName("id") val id: String,
     @SerialName("name") val name: String,
     @SerialName("contact") val contact: RestoContact? = null,
     @SerialName("location") val location: RestoLocation,
@@ -46,7 +47,7 @@ data class RestoLocation(
 internal fun List<RestoVenue>.toMarkers(): List<MarkerOptions> = map { it.toMarker() }
 
 private fun RestoVenue.toMarker(): MarkerOptions =
-    MarkerOptions().position(location.toLatLng()).title(name)
+    MarkerOptions().position(location.toLatLng()).title(name).snippet("tap to see more")
 
 private fun RestoLocation.toLatLng(): LatLng =
     LatLng(lat, lng)
