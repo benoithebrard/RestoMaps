@@ -9,6 +9,9 @@ import androidx.core.app.ActivityCompat
 import androidx.databinding.DataBindingUtil
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import com.bempaaa.restomaps.data.RestoVenue
+import com.bempaaa.restomaps.data.toLatLng
+import com.bempaaa.restomaps.data.toName
 import com.bempaaa.restomaps.databinding.ActivityMapsBinding
 import com.bempaaa.restomaps.permissons.LocationPermissionManager
 import com.bempaaa.restomaps.viewmodels.RestoMapViewModel
@@ -89,17 +92,16 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             setOnInfoWindowClickListener { marker ->
-                // TODO: search by id instead
-                restoMapViewModel.getCachedVenueByName(marker.title)?.let { venue ->
+                (marker.tag as? RestoVenue)?.let { venue ->
                     val restoDetailsFragment = RestoDetailsFragment.newInstance(venue)
                     restoDetailsFragment.show(supportFragmentManager, restoDetailsFragment.tag)
                 }
             }
 
-            restoMapViewModel.restoMarkers.observe(
+            restoMapViewModel.restoVenues.observe(
                 this@RestoMapsActivity,
-                Observer<List<MarkerOptions>> { restoMarkers ->
-                    restoMarkers.addToMap(this)
+                Observer<List<RestoVenue>> { venues ->
+                    venues.addToMap(this)
                 })
 
             setOnCameraIdleListener {
@@ -109,10 +111,17 @@ class RestoMapsActivity : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
-    private fun List<MarkerOptions>.addToMap(map: GoogleMap) =
+    private fun List<RestoVenue>.addToMap(map: GoogleMap) =
         with(map) {
-            forEach { addMarker(it) }
+            forEach {
+                addMarker(it.toMarker()).apply {
+                    tag = it
+                }
+            }
         }
+
+    private fun RestoVenue.toMarker(): MarkerOptions =
+        MarkerOptions().position(location.toLatLng()).title(name).snippet(categories.toName())
 
     @SuppressLint("MissingPermission")
     private fun getLastLocation() {

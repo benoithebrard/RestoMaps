@@ -46,8 +46,6 @@ class RestoMapsRepository(private val service: FourSquareSearchService) {
     fun getCachedVenuesInBounds(bounds: LatLngBounds): List<RestoVenue> =
         venueCache.filterKeys { it.isInBounds(bounds) }.values.toList()
 
-    fun getCachedVenueByName(name: String) = venueCache.values.find { it.name == name }
-
     private fun storeInCache(venues: List<RestoVenue>) {
         venueCache.putAll(venues.associateBy({ it.location }, { it }))
     }

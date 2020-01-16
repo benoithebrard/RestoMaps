@@ -1,7 +1,6 @@
 package com.bempaaa.restomaps.data
 
 import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -44,12 +43,6 @@ data class RestoLocation(
     @SerialName("city") val city: String? = null
 )
 
-internal fun List<RestoVenue>.toMarkers(): List<MarkerOptions> = map { it.toMarker() }
-
-private fun RestoVenue.toMarker(): MarkerOptions =
-    MarkerOptions().position(location.toLatLng()).title(name).snippet(categories.toName())
-
-private fun RestoLocation.toLatLng(): LatLng =
-    LatLng(lat, lng)
-
 internal fun List<RestoCategory>.toName() = getOrNull(0)?.name
+
+internal fun RestoLocation.toLatLng(): LatLng = LatLng(lat, lng)

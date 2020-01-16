@@ -4,7 +4,6 @@ import androidx.lifecycle.*
 import com.bempaaa.restomaps.data.*
 import com.bempaaa.restomaps.data.Configuration.restoService
 import com.google.android.gms.maps.model.LatLngBounds
-import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -24,10 +23,10 @@ class RestoMapViewModel : ViewModel() {
             }
         }
 
-    val restoMarkers: LiveData<List<MarkerOptions>> =
+    val restoVenues: LiveData<List<RestoVenue>> =
         Transformations.map(searchResult) { result ->
             when (result) {
-                is SearchResult.Success -> result.restoVenues.toMarkers()
+                is SearchResult.Success -> result.restoVenues
                 else -> emptyList()
             }
         }
@@ -39,6 +38,4 @@ class RestoMapViewModel : ViewModel() {
             }
         }
     }
-
-    fun getCachedVenueByName(name: String) = repository.getCachedVenueByName(name)
 }
