@@ -1,6 +1,7 @@
 package com.bempaaa.restomaps.viewmodels
 
 import com.bempaaa.restomaps.data.RestoVenue
+import com.bempaaa.restomaps.data.toName
 
 data class RestoDetailsViewModel(
     val title: String,
@@ -14,7 +15,7 @@ data class RestoDetailsViewModel(
 
 internal fun RestoVenue.toRestoDetailsViewModel() = RestoDetailsViewModel(
     title = name,
-    category = categories.getOrNull(0)?.name,
+    category = categories.toName(),
     phone = contact?.phone,
     address = location.address,
     postalCode = location.postalCode,

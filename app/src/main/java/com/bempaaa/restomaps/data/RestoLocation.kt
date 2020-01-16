@@ -47,7 +47,9 @@ data class RestoLocation(
 internal fun List<RestoVenue>.toMarkers(): List<MarkerOptions> = map { it.toMarker() }
 
 private fun RestoVenue.toMarker(): MarkerOptions =
-    MarkerOptions().position(location.toLatLng()).title(name).snippet("tap to see more")
+    MarkerOptions().position(location.toLatLng()).title(name).snippet(categories.toName())
 
 private fun RestoLocation.toLatLng(): LatLng =
     LatLng(lat, lng)
+
+internal fun List<RestoCategory>.toName() = getOrNull(0)?.name
